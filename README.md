@@ -19,7 +19,7 @@ No CMAKE_Fortran_COMPILER could be found.
 # Description
 The project is divided into three main components: 
 1. `The networking layer` responsible for listening for incoming connections, receiving commands from client, and responding with the data
-2. `The protocol parsing layer` that parses the data received from clients and performs a validity check before submitting the requests to the querying `the storage layer`
+2. `The protocol parsing layer` that parses the data received from clients and performs a validity check before submitting the requests to `the storage layer`
 3. `The storage layer` that is responsible for storing data from the client, and retrieving the requested data. The storage layer is implemented as an in memory map that indexes on the key. To maintain an eviction policy, a LRU based eviction algorithm is used.
 
 
