@@ -106,7 +106,7 @@ In order to scale the server to handle hundreds and thousands of concurrent conn
 
 2. Increasing the number of open file handles: Increase the number of file handles and the system limit on open files using `echo 32768 > /proc/sys/fs/file-max` and `ulimit -n 32768`. 
 
-3. Reducing the amount of stack space allowed for each thread so as not to run out of virtual memory.
+3. Reducing the amount of stack space allowed for each thread so as not to run out of virtual memory. The stack size can be obtained using `ulimit -s`, which is generally set to 8 MB. This size can be chanaged for instance usnig pthread library by using the api `int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize)'
 
 4. Trying to achieve Zero-copy: When the data is received, it is first received in kernel buffers, which is then copied to the application buffer. This copying of data has a performance impact. Using a user space tcp stack can help achieve zero copy. 
 
