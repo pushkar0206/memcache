@@ -98,7 +98,7 @@ received data is STORED
 
 # Further Improvements
 I have verified the basic functionality and correctness. I have tested the server against multiple connections with multiple clients trying to set and get data at the same time. I have also tested that the get command can retrieve data for multiple keys, as long as the server holds the data for those keys. 
-Though I have done some negative testing, I am sure, I have missed a few negative test cases. I have also not analzyed the performance of the server. I have not analzyed the server under heavy or constant client connections/disconnections to determine the optimal number of threads that need to be created within the threadgroup.
+Though I have done some negative testing, I am sure, I have missed a few negative test cases.
 
 In order to scale the server to handle hundreds and thousands of concurrent connections, multiple things will need to be changed. The list is by no means exhaustive. I am listing a few of the changes that can be done:
 
