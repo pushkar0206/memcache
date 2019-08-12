@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
   if(rc < 0) {
     perror("Client-write() error");
-    rc = getsockopt(sd, SOL_SOCKET, SO_ERROR, &temp, &length);
+    rc = getsockopt(sd, SOL_SOCKET, SO_ERROR, &temp, (socklen_t *)&length);
     if(rc == 0) {
       /* Print out the asynchronously received error. */
       errno = temp;

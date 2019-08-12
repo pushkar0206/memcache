@@ -93,7 +93,7 @@ int main(void)
 		// lose the pesky "address already in use" error message
 		setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
 
-		if (bind(listener, p->ai_addr, p->ai_addrlen) < 0) {
+		if (bind(listener, (const struct sockaddr *)p->ai_addr, p->ai_addrlen) < 0) {
 			close(listener);
 			continue;
 		}

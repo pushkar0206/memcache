@@ -365,7 +365,7 @@ string ParseSetCmd(string s, Cache* memcache) {
   if (i + bytes + 2 != len) {
     printf("math doesnt add up\n");
     error_str.append("wrong command format\r\n");
-    delete data;
+    delete[] data;
     return error_str;
   }
   CacheNode *node = new CacheNode();

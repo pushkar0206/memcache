@@ -44,7 +44,7 @@ struct CacheNode {
 
   ~CacheNode() {
     if (data) {
-      delete data;
+      delete[] data;
       data = nullptr;
     }
   }
