@@ -27,26 +27,27 @@ Once the server is started it creates a socket and listens on port 11211 for inc
 
 # Running the unit tests
 The unit tests can be found in the `test` folder. The unit tests are divided into two major types. The file `memcache_lru.cpp` contains tests that verify that requests are stored and retrieved correctly, and an LRU eviction policy is followed when an entry needs to be deleted. The file `memcache_cmds.cpp` contains tests that verify that the commands are parsed as expected and the data is stored and retrieved correctly. 
+The unit test also contains a stress test that simulates multiple clients sending set and get commands concurrently.
 
 The unit tests can be run as:
 ```
 $ ./build/bin/unit_tests
 Running main() from gtest_main.cc
-[==========] Running 13 tests from 1 test case.
+[==========] Running 14 tests from 1 test case.
 [----------] Global test environment set-up.
-[----------] 13 tests from memcache
+[----------] 14 tests from memcache
 [ RUN      ] memcache.createCache
 [       OK ] memcache.createCache (0 ms)
 [ RUN      ] memcache.addOneNewEntry
 [       OK ] memcache.addOneNewEntry (1 ms)
 [ RUN      ] memcache.addTwoNewEntries
-[       OK ] memcache.addTwoNewEntries (2 ms)
+[       OK ] memcache.addTwoNewEntries (1 ms)
 [ RUN      ] memcache.addDuplicateEntries
-[       OK ] memcache.addDuplicateEntries (1 ms)
+[       OK ] memcache.addDuplicateEntries (0 ms)
 [ RUN      ] memcache.getOneEntry
 [       OK ] memcache.getOneEntry (1 ms)
 [ RUN      ] memcache.addThreeGetTwoEntries
-[       OK ] memcache.addThreeGetTwoEntries (2 ms)
+[       OK ] memcache.addThreeGetTwoEntries (1 ms)
 [ RUN      ] memcache.setCmdStrwithoutnoreply
 [       OK ] memcache.setCmdStrwithoutnoreply (0 ms)
 [ RUN      ] memcache.setCmdStrwithnoreply
@@ -61,11 +62,14 @@ Running main() from gtest_main.cc
 [       OK ] memcache.setCmdStrwithoutnoreplyAndget2 (0 ms)
 [ RUN      ] memcache.set1CmdStrwithoutnoreplyAndget2
 [       OK ] memcache.set1CmdStrwithoutnoreplyAndget2 (0 ms)
-[----------] 13 tests from memcache (7 ms total)
+[ RUN      ] memcache.stressTest
+[       OK ] memcache.stressTest (33 ms)
+[----------] 14 tests from memcache (37 ms total)
 
 [----------] Global test environment tear-down
-[==========] 13 tests from 1 test case ran. (7 ms total)
-[  PASSED  ] 13 tests.
+[==========] 14 tests from 1 test case ran. (37 ms total)
+[  PASSED  ] 14 tests.
+
 ```
 
 # Running the server
@@ -89,6 +93,43 @@ $ ./client2
 Client-socket() OK
 Connection established...
 Sending some string to the server 127.0.0.1...
+Client-write() is OK
+String successfully sent
+Waiting for the result...
+Client-read() received 8 bytes
+received data is STORED
+```
+
+Also added is a sample stress test program that sends one request every minute for 100 iterations. The stress program can be compiled as:
+'$ g++ -std=c++14 -g stress_client.cpp -o stress_client'
+```
+$ ./stress_client 
+Client-socket() OK
+Connection established...
+Sending some string to the server for iter 0...
+string is set 0 0 900 131072
+
+data length = 131094
+Client-write() is OK
+String successfully sent
+Waiting for the result...
+Client-read() received 8 bytes
+received data is STORED
+
+Sending some string to the server for iter 1...
+string is set 1 0 900 131072
+
+data length = 131094
+Client-write() is OK
+String successfully sent
+Waiting for the result...
+Client-read() received 8 bytes
+received data is STORED
+
+Sending some string to the server for iter 2...
+string is set 2 0 900 131072
+
+data length = 131094
 Client-write() is OK
 String successfully sent
 Waiting for the result...
