@@ -9,6 +9,7 @@
 using namespace std;
 
 #define MAX_DATA_LEN 128 * 1024
+#define MAX_PAYLOAD_LENGTH ((128 * 1024) + 512)
 #define CAPACITY 5000
 
 struct CacheNode {
@@ -103,7 +104,7 @@ class Cache {
 };
 
 int GetDataFromClient(int socket, ThreadPool *pool, Cache* memcache);
-void ParseDataFromClient(string s, int socket, Cache* memcache);
-string ParseSetCmd(string s, Cache* memcache);
+void ParseDataFromClient(string s, int socket, Cache* memcache, int total_bytes);
+string ParseSetCmd(string s, Cache* memcache, int total_bytes);
 string ParseGetCmd(string s, Cache* memcache);
 #endif //memcache_h

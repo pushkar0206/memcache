@@ -26,7 +26,7 @@ target_include_directories(
 add_library(mylib_shared SHARED mylib.cpp)
 
 # compile main executable
-add_executable(main main.cpp)
+add_executable(main main.cpp memserver.cpp)
 target_include_directories(
     main
     PRIVATE

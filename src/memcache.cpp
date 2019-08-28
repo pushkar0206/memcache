@@ -1,6 +1,10 @@
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
 #include <inttypes.h>
+#include <netinet/in.h>
 #include <ctype.h>
 #include <vector>
 #include "memcache.h"
@@ -239,11 +243,10 @@ string ParseGetCmd(string s, Cache* memcache) {
  * @param memcahe: the pointer to memcache
  * @return s: STORED if successful, CLIENT_ERROR on failure
  */
-string ParseSetCmd(string s, Cache* memcache) {
+string ParseSetCmd(string s, Cache* memcache, int total_bytes) {
   string result;
   string error_str = "CLIENT_ERROR ";
-  // printf("cmd string is %s\n", s.c_str());
-  int len = s.length();
+  int len = total_bytes;
   int i = 4;
   string key;
   uint16_t flags;
@@ -288,7 +291,6 @@ string ParseSetCmd(string s, Cache* memcache) {
     error_str.append("expected flag\r\n");
     return error_str;
   }
-  // printf("flags = %u\n", (unsigned int)flags);
   string exp_str;
   i++;
   if (i >= len) {
@@ -304,7 +306,6 @@ string ParseSetCmd(string s, Cache* memcache) {
     return error_str;
   }
   exp_time = strtoul(exp_str.c_str(), nullptr, 10);
-  // printf("exp time = %lu seconds\n", exp_time);
   i++;
   if (i == len) {
     error_str.append("wrong command format\r\n");
@@ -316,13 +317,11 @@ string ParseSetCmd(string s, Cache* memcache) {
     i++;
   }
   if (bytes_str.length() == 0 || i == len) {
-    printf("error parsing bytes...\n");
     error_str.append("wrong command format\r\n");
     return error_str;
   }
   bytes = strtoul(bytes_str.c_str(), nullptr, 10);
   if (bytes == 0 || bytes > MAX_DATA_LEN) {
-    printf("ERROR: could not parse bytes\n");
     error_str.append("wrong bytes format\r\n");
     return error_str;
   }
@@ -339,7 +338,6 @@ string ParseSetCmd(string s, Cache* memcache) {
 
   // skip noreply if present
   if (i + 7 < len && s.substr(i, 7) == "noreply") {
-    // printf("noreply found..skipping..\n");
     i += 7;
   }
   if (i+2 >= len) {
@@ -355,19 +353,24 @@ string ParseSetCmd(string s, Cache* memcache) {
     error_str.append("wrong command format\r\n");
     return error_str;
   }
-  if (i + (bytes - 1) > len) {
+  if (i >= total_bytes) {
+    error_str.append("wrong command format\r\n");
+    return error_str;
+  }
+  if (((i+2) + bytes) != total_bytes) {
+    error_str.append("wrong command format\r\n");
+    return error_str;
+  }
+  if (s[i+bytes] != '\r' || s[i+bytes+1] != '\n') {
+    if (s[total_bytes - 1] == '\n') {
+    }
     error_str.append("wrong command format\r\n");
     return error_str;
   }
   char *data = new char[bytes];
   void *data_ptr = reinterpret_cast<void *>(&s[i]);
   memcpy(reinterpret_cast<void *>(data), data_ptr, bytes);
-  if (i + bytes + 2 != len) {
-    printf("math doesnt add up\n");
-    error_str.append("wrong command format\r\n");
-    delete[] data;
-    return error_str;
-  }
+  
   CacheNode *node = new CacheNode();
   if (node == nullptr) {
     error_str.append("memory error\r\n");
@@ -394,15 +397,15 @@ string ParseSetCmd(string s, Cache* memcache) {
  * @param socket: the bidirectional socket to which the reply will be sent
  * @param: pointer to memcache
  */
-void ParseDataFromClient(string s, int socket, Cache* memcache) {
-  printf("In ParseDataFromClient for string %s, socket %d\n", s.c_str(), socket);
+void ParseDataFromClient(string s, int socket, Cache* memcache, int total_bytes) {
+  // printf("In ParseDataFromClient for string %s, socket %d\n", s.c_str(), socket);
   string send_to_client_str;
-  if (s.length() < 3) {
+  if (total_bytes < 3) {
     send_to_client_str = "ERROR wrong command format\r\n";
   } else {
     string cmd_str = s.substr(0, 3);
     if (cmd_str == "set") {
-      send_to_client_str = ParseSetCmd(s, memcache);
+      send_to_client_str = ParseSetCmd(s, memcache, total_bytes);
     } else if (cmd_str == "get") {
       send_to_client_str = ParseGetCmd(s, memcache);
     } else {
@@ -418,4 +421,5 @@ void ParseDataFromClient(string s, int socket, Cache* memcache) {
     printf("Failed to send result %s to client\n", send_to_client_str.c_str());
   }
 }
+
 
