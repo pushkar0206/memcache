@@ -101,7 +101,7 @@ received data is STORED
 ```
 
 Also added is a sample stress test program that sends one request every minute for 100 iterations. The stress program can be compiled as:
-'$ g++ -std=c++14 -g stress_client.cpp -o stress_client'
+`$ g++ -std=c++14 -g stress_client.cpp -o stress_client`
 ```
 $ ./stress_client 
 Client-socket() OK
