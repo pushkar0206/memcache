@@ -1,6 +1,7 @@
 #ifndef memserver_h
 #define memserver_h
 
+#include <sys/select.h>
 #include "memcache.h"
 #include "Threadpool.h"
 using namespace std;
