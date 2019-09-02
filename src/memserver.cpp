@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <netinet/in.h>
+#include <errno.h>
 #include <ctype.h>
 #include <vector>
 #include "memserver.h"
@@ -134,15 +135,37 @@ void *CacheServer::get_in_server_addr(struct sockaddr *sa)
  */
 int CacheServer::GetData(int socket) {
   char buffer[MAX_PAYLOAD_LENGTH];
-  int nbytes;
+  int nbytes = 0;
+  string s;
   
-  if ((nbytes = recv(socket, buffer, sizeof buffer, 0)) <= 0) {
+  /*if ((nbytes = recv(socket, buffer, sizeof buffer, 0)) <= 0) {
     printf("Received no data from socket %d\n", socket);
+    return -1;
+  }*/
+  int n;
+  while((n = recv(socket, buffer, sizeof(buffer), 0)) > 0) {
+    if(n > 0 && (nbytes + n <= MAX_PAYLOAD_LENGTH)) {
+      s.append(buffer, n);
+      nbytes += n;
+    }
+    if (n == 0 || nbytes == MAX_PAYLOAD_LENGTH) {
+      break;
+    }
+    if (nbytes > 2 && s[nbytes - 2] == '\r' && s[nbytes - 1] == '\n') {
+      break;
+    }
+  }
+
+  if(n < 0) {
     return -1;
   }
 
+  if (nbytes == 0) {
+    return 0;
+  }
+
   //buffer[nbytes] = '\0'; 
-  string s(buffer, MAX_PAYLOAD_LENGTH);
+  //string s(buffer, MAX_PAYLOAD_LENGTH);
   //s = buffer;
   // printf("Received data '%s' sending to threadpool\n", s.c_str());
   printf("Received total = %d bytes\n", nbytes);
